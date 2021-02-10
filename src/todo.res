@@ -48,8 +48,12 @@ date and file functions defined above. Remove it to begin your implementation.
 //   Js.log("Todo file created.")
 // }
 
+<<<<<<< HEAD
 @bs.module("process")
 external argv: array<string> = "argv"
+=======
+@bs.module("process") @val external argv: array<string> = "argv"
+>>>>>>> 50dcf49da8086f3b9ae3a24a8151faa8c9db2bee
 
 let argv = argv
 let command = argv[2]
