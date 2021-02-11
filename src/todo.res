@@ -48,15 +48,29 @@ date and file functions defined above. Remove it to begin your implementation.
 //   Js.log("Todo file created.")
 // }
 
-<<<<<<< HEAD
+let pending_todos_file: string = "todo.txt"
+let completed_todos_file = "done.txt"
+
+let help_string = `Usage :-
+$ ./todo add "todo item"  # Add a new todo
+$ ./todo ls               # Show remaining todos
+$ ./todo del NUMBER       # Delete a todo
+$ ./todo done NUMBER      # Complete a todo
+$ ./todo help             # Show usage
+$ ./todo report           # Statistics`
+
 @bs.module("process")
 external argv: array<string> = "argv"
-=======
-@bs.module("process") @val external argv: array<string> = "argv"
->>>>>>> 50dcf49da8086f3b9ae3a24a8151faa8c9db2bee
 
 let argv = argv
-let command = argv[2]
-let arg = argv[3]
+let args = Js.Array.sliceFrom(2, argv)
 
-Js.log(`${command} ${arg}`)
+let isEmpty = x => {
+  if Belt.Array.length(x) == 0 {
+    true
+  } else {
+    false
+  }
+}
+
+Js.log(isEmpty(args))

@@ -2,7 +2,6 @@
 'use strict';
 
 var Process = require("process");
-var Caml_array = require("bs-platform/lib/js/caml_array.js");
 
 var getToday = (function() {
   let date = new Date();
@@ -13,17 +12,28 @@ var getToday = (function() {
 
 var argv = Process.argv;
 
-var command = Caml_array.get(argv, 2);
+var args = argv.slice(2);
 
-var arg = Caml_array.get(argv, 3);
+function isEmpty(x) {
+  return x.length === 0;
+}
 
-console.log(command + " " + arg);
+console.log(args.length === 0);
 
 var encoding = "utf8";
 
+var pending_todos_file = "todo.txt";
+
+var completed_todos_file = "done.txt";
+
+var help_string = "Usage :-\n$ ./todo add \"todo item\"  # Add a new todo\n$ ./todo ls               # Show remaining todos\n$ ./todo del NUMBER       # Delete a todo\n$ ./todo done NUMBER      # Complete a todo\n$ ./todo help             # Show usage\n$ ./todo report           # Statistics";
+
 exports.getToday = getToday;
 exports.encoding = encoding;
+exports.pending_todos_file = pending_todos_file;
+exports.completed_todos_file = completed_todos_file;
+exports.help_string = help_string;
 exports.argv = argv;
-exports.command = command;
-exports.arg = arg;
+exports.args = args;
+exports.isEmpty = isEmpty;
 /* argv Not a pure module */
