@@ -73,4 +73,70 @@ let isEmpty = x => {
   }
 }
 
-Js.log(isEmpty(args))
+let cmdHelp = () => {
+  Js.log(help_string)
+}
+
+let getIndex = x =>
+  switch x {
+  | None => 0
+  | Some(x) => x
+  }
+
+let cmdLs = () => {
+  let todos = readFileSync(pending_todos_file, {encoding: "utf8", flag: "r"})
+  if Js.String.length(todos) == 0 {
+    Js.log("There are no pending todos!")
+  } else {
+    let todos: array<string> = Js.String.split("\n", todos)
+    let () = Belt.Array.reverseInPlace(todos)
+    let length = todos->Belt.Array.length
+    let string = (todo, index) => `[${Belt.Int.toString(length - index)}] ${todo}`
+    let todos = Js.Array.mapi(string, todos)
+    Js.log(todos)
+  }
+}
+
+let option = args => {
+  if isEmpty(args) {
+    // Js.log(help_string)
+    cmdHelp()
+  } else {
+    let args = Belt.Array.map(args, x => x->Js.String.trim->Js.String.toLowerCase)
+    let command = Js.Array.shift(args)
+    let command = switch command {
+    | None => "none"
+    | Some(x) => x
+    }
+    switch command {
+    | "help" => cmdHelp()
+    | "ls" => cmdLs()
+    | _ => cmdHelp()
+    }
+  }
+}
+
+let _ = option(args)
+
+// Js.log(option(args))
+// Js.log(option(args))
+// case 'help':
+//       cmdHelp()
+//       break;
+//     case 'ls':
+//       cmdLs()
+//       break
+//     case 'add':
+//       cmdAddTodo(arg)
+//       break
+//     case 'del':
+//       cmdDelTodo(arg)
+//       break
+//     case 'done':
+//       cmdMarkDone(arg)
+//       break
+//     case 'report':
+//       cmdReport()
+//       break
+//     default:
+//       cmdHelp()
