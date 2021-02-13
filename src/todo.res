@@ -77,23 +77,32 @@ let cmdHelp = () => {
   Js.log(help_string)
 }
 
-let getIndex = x =>
-  switch x {
-  | None => 0
-  | Some(x) => x
-  }
-
 let cmdLs = () => {
-  let todos = readFileSync(pending_todos_file, {encoding: "utf8", flag: "r"})
+  let todos = readFileSync(pending_todos_file, {encoding: encoding, flag: "r"})->Js.String.trim
   if Js.String.length(todos) == 0 {
     Js.log("There are no pending todos!")
   } else {
     let todos: array<string> = Js.String.split("\n", todos)
     let () = Belt.Array.reverseInPlace(todos)
     let length = todos->Belt.Array.length
-    let string = (todo, index) => `[${Belt.Int.toString(length - index)}] ${todo}`
-    let todos = Js.Array.mapi(string, todos)
-    Js.log(todos)
+    // let todos = Js.Array.mapi(
+    //   (todo, index) => `[${Belt.Int.toString(length - index)}] ${todo}`,
+    //   todos,
+    // )
+    todos->Belt.Array.forEachWithIndex((index, todo) =>
+      Js.log(`[${Belt.Int.toString(length - index)}] ${todo}`)
+    )
+  }
+}
+
+let cmdAddTodo = text => {
+  if isEmpty(text) {
+    Js.log("Error: Missing todo string. Nothing added!")
+  } else {
+    Belt.Array.forEach(text, x => {
+      appendFileSync(pending_todos_file, x ++ "\n", {encoding: encoding, flag: "a"})
+      Js.log(`Added todo: "${x}"`)
+    })
   }
 }
 
@@ -111,6 +120,7 @@ let option = args => {
     switch command {
     | "help" => cmdHelp()
     | "ls" => cmdLs()
+    | "add" => cmdAddTodo(args)
     | _ => cmdHelp()
     }
   }

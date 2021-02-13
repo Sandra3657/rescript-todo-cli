@@ -12,6 +12,8 @@ var getToday = (function() {
     .split("T")[0];
 });
 
+var encoding = "utf8";
+
 var pending_todos_file = "todo.txt";
 
 var help_string = "Usage :-\n$ ./todo add \"todo item\"  # Add a new todo\n$ ./todo ls               # Show remaining todos\n$ ./todo del NUMBER       # Delete a todo\n$ ./todo done NUMBER      # Complete a todo\n$ ./todo help             # Show usage\n$ ./todo report           # Statistics";
@@ -29,19 +31,11 @@ function cmdHelp(param) {
   
 }
 
-function getIndex(x) {
-  if (x !== undefined) {
-    return x;
-  } else {
-    return 0;
-  }
-}
-
 function cmdLs(param) {
   var todos = Fs.readFileSync(pending_todos_file, {
-        encoding: "utf8",
-        flag: "r"
-      });
+          encoding: encoding,
+          flag: "r"
+        }).trim();
   if (todos.length === 0) {
     console.log("There are no pending todos!");
     return ;
@@ -49,12 +43,26 @@ function cmdLs(param) {
   var todos$1 = todos.split("\n");
   Belt_Array.reverseInPlace(todos$1);
   var length = todos$1.length;
-  var string = function (todo, index) {
-    return "[" + String(length - index | 0) + "] " + todo;
-  };
-  var todos$2 = todos$1.map(string);
-  console.log(todos$2);
-  
+  return Belt_Array.forEachWithIndex(todos$1, (function (index, todo) {
+                console.log("[" + String(length - index | 0) + "] " + todo);
+                
+              }));
+}
+
+function cmdAddTodo(text) {
+  if (text.length === 0) {
+    console.log("Error: Missing todo string. Nothing added!");
+    return ;
+  } else {
+    return Belt_Array.forEach(text, (function (x) {
+                  Fs.appendFileSync(pending_todos_file, x + "\n", {
+                        encoding: encoding,
+                        flag: "a"
+                      });
+                  console.log("Added todo: \"" + x + "\"");
+                  
+                }));
+  }
 }
 
 function option(args) {
@@ -68,6 +76,8 @@ function option(args) {
   var command = args$1.shift();
   var command$1 = command !== undefined ? command : "none";
   switch (command$1) {
+    case "add" :
+        return cmdAddTodo(args$1);
     case "help" :
         console.log(help_string);
         return ;
@@ -81,8 +91,6 @@ function option(args) {
 
 option(args);
 
-var encoding = "utf8";
-
 var completed_todos_file = "done.txt";
 
 exports.getToday = getToday;
@@ -94,7 +102,7 @@ exports.argv = argv;
 exports.args = args;
 exports.isEmpty = isEmpty;
 exports.cmdHelp = cmdHelp;
-exports.getIndex = getIndex;
 exports.cmdLs = cmdLs;
+exports.cmdAddTodo = cmdAddTodo;
 exports.option = option;
 /* argv Not a pure module */
