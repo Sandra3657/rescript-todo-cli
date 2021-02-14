@@ -55,21 +55,25 @@ function cmdHelp(param) {
 }
 
 function cmdLs(param) {
-  var todos = Fs.readFileSync(pending_todos_file, {
-        encoding: encoding,
-        flag: "r"
-      });
-  if (todos.length === 0) {
-    console.log("There are no pending todos!");
-    return ;
+  if (Fs.existsSync(pending_todos_file)) {
+    var todos = Fs.readFileSync(pending_todos_file, {
+          encoding: encoding,
+          flag: "r"
+        });
+    if (todos.length === 0) {
+      console.log("There are no pending todos!");
+      return ;
+    }
+    var todos$1 = todos.split("\n");
+    Belt_Array.reverseInPlace(todos$1);
+    var length = todos$1.length;
+    return Belt_Array.forEachWithIndex(todos$1, (function (index, todo) {
+                  console.log("[" + String(length - index | 0) + "] " + todo);
+                  
+                }));
   }
-  var todos$1 = todos.split("\n");
-  Belt_Array.reverseInPlace(todos$1);
-  var length = todos$1.length;
-  return Belt_Array.forEachWithIndex(todos$1, (function (index, todo) {
-                console.log("[" + String(length - index | 0) + "] " + todo);
-                
-              }));
+  console.log("There are no pending todos!");
+  
 }
 
 function cmdAddTodo(text) {

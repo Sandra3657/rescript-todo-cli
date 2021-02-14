@@ -96,20 +96,24 @@ let cmdHelp = () => {
 }
 
 let cmdLs = () => {
-  let todos = readFileSync(pending_todos_file, {encoding: encoding, flag: "r"})
-  if Js.String.length(todos) == 0 {
-    Js.log("There are no pending todos!")
+  if existsSync(pending_todos_file) {
+    let todos = readFileSync(pending_todos_file, {encoding: encoding, flag: "r"})
+    if Js.String.length(todos) == 0 {
+      Js.log("There are no pending todos!")
+    } else {
+      let todos: array<string> = Js.String.split("\n", todos)
+      let () = Belt.Array.reverseInPlace(todos)
+      let length = todos->Belt.Array.length
+      // let todos = Js.Array.mapi(
+      //   (todo, index) => `[${Belt.Int.toString(length - index)}] ${todo}`,
+      //   todos,
+      // )
+      todos->Belt.Array.forEachWithIndex((index, todo) =>
+        Js.log(`[${Belt.Int.toString(length - index)}] ${todo}`)
+      )
+    }
   } else {
-    let todos: array<string> = Js.String.split("\n", todos)
-    let () = Belt.Array.reverseInPlace(todos)
-    let length = todos->Belt.Array.length
-    // let todos = Js.Array.mapi(
-    //   (todo, index) => `[${Belt.Int.toString(length - index)}] ${todo}`,
-    //   todos,
-    // )
-    todos->Belt.Array.forEachWithIndex((index, todo) =>
-      Js.log(`[${Belt.Int.toString(length - index)}] ${todo}`)
-    )
+    Js.log("There are no pending todos!")
   }
 }
 
