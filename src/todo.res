@@ -73,12 +73,30 @@ let isEmpty = x => {
   }
 }
 
+let delTodo = number => {
+  let todos = readFileSync(pending_todos_file, {encoding: encoding, flag: "r"})->Js.String.trim
+  if todos->Js.String.length != 0 {
+    let todos: array<string> = Js.String.split("\n", todos)
+    if number < 1 || number > todos->Belt.Array.length {
+      Js.log(`Error: todo #${number->Belt.Int.toString} does not exist. Nothing deleted.`)
+    } else {
+      let _ = Js.Array.spliceInPlace(~pos=number - 1, ~remove=1, ~add=[], todos)
+      Js.log(`Deleted todo #${number->Belt.Int.toString}`)
+      writeFileSync(
+        pending_todos_file,
+        Js.Array.joinWith("\n", todos),
+        {encoding: encoding, flag: "w"},
+      )
+    }
+  }
+}
+
 let cmdHelp = () => {
   Js.log(help_string)
 }
 
 let cmdLs = () => {
-  let todos = readFileSync(pending_todos_file, {encoding: encoding, flag: "r"})->Js.String.trim
+  let todos = readFileSync(pending_todos_file, {encoding: encoding, flag: "r"})
   if Js.String.length(todos) == 0 {
     Js.log("There are no pending todos!")
   } else {
@@ -106,6 +124,20 @@ let cmdAddTodo = text => {
   }
 }
 
+let cmdDelTodo = numbers => {
+  if isEmpty(numbers) {
+    Js.log("Error: Missing NUMBER for deleting todo.")
+  } else {
+    let numbers = numbers->Belt.Array.map(num => num->Belt.Int.fromString)
+    numbers->Belt.Array.forEach(num =>
+      switch num {
+      | None => Js.log("Error")
+      | Some(x) => x->delTodo
+      }
+    )
+  }
+}
+
 let option = args => {
   if isEmpty(args) {
     // Js.log(help_string)
@@ -121,6 +153,7 @@ let option = args => {
     | "help" => cmdHelp()
     | "ls" => cmdLs()
     | "add" => cmdAddTodo(args)
+    | "del" => cmdDelTodo(args)
     | _ => cmdHelp()
     }
   }

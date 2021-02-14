@@ -3,6 +3,7 @@
 
 var Fs = require("fs");
 var Process = require("process");
+var Belt_Int = require("bs-platform/lib/js/belt_Int.js");
 var Belt_Array = require("bs-platform/lib/js/belt_Array.js");
 
 var getToday = (function() {
@@ -26,6 +27,28 @@ function isEmpty(x) {
   return x.length === 0;
 }
 
+function delTodo(number) {
+  var todos = Fs.readFileSync(pending_todos_file, {
+          encoding: encoding,
+          flag: "r"
+        }).trim();
+  if (todos.length === 0) {
+    return ;
+  }
+  var todos$1 = todos.split("\n");
+  if (number < 1 || number > todos$1.length) {
+    console.log("Error: todo #" + String(number) + " does not exist. Nothing deleted.");
+  } else {
+    todos$1.splice(number - 1 | 0, 1);
+    console.log("Deleted todo #" + String(number));
+    Fs.writeFileSync(pending_todos_file, todos$1.join("\n"), {
+          encoding: encoding,
+          flag: "w"
+        });
+  }
+  
+}
+
 function cmdHelp(param) {
   console.log(help_string);
   
@@ -33,9 +56,9 @@ function cmdHelp(param) {
 
 function cmdLs(param) {
   var todos = Fs.readFileSync(pending_todos_file, {
-          encoding: encoding,
-          flag: "r"
-        }).trim();
+        encoding: encoding,
+        flag: "r"
+      });
   if (todos.length === 0) {
     console.log("There are no pending todos!");
     return ;
@@ -65,6 +88,22 @@ function cmdAddTodo(text) {
   }
 }
 
+function cmdDelTodo(numbers) {
+  if (numbers.length === 0) {
+    console.log("Error: Missing NUMBER for deleting todo.");
+    return ;
+  }
+  var numbers$1 = Belt_Array.map(numbers, Belt_Int.fromString);
+  return Belt_Array.forEach(numbers$1, (function (num) {
+                if (num !== undefined) {
+                  return delTodo(num);
+                } else {
+                  console.log("Error");
+                  return ;
+                }
+              }));
+}
+
 function option(args) {
   if (args.length === 0) {
     console.log(help_string);
@@ -78,6 +117,8 @@ function option(args) {
   switch (command$1) {
     case "add" :
         return cmdAddTodo(args$1);
+    case "del" :
+        return cmdDelTodo(args$1);
     case "help" :
         console.log(help_string);
         return ;
@@ -101,8 +142,10 @@ exports.help_string = help_string;
 exports.argv = argv;
 exports.args = args;
 exports.isEmpty = isEmpty;
+exports.delTodo = delTodo;
 exports.cmdHelp = cmdHelp;
 exports.cmdLs = cmdLs;
 exports.cmdAddTodo = cmdAddTodo;
+exports.cmdDelTodo = cmdDelTodo;
 exports.option = option;
 /* argv Not a pure module */
