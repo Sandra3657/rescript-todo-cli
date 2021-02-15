@@ -176,7 +176,14 @@ let cmdMarkDone = numbers => {
 }
 
 let cmdReport = () => {
-
+  let pending = readFileSync(pending_todos_file, {encoding: encoding, flag: "r"})->Js.String.trim
+  let pending = Js.String.split(eol, pending)->Js.Array.length
+  let completed =
+    readFileSync(completed_todos_file, {encoding: encoding, flag: "r"})->Js.String.trim
+  let completed = Js.String.split(eol, completed)->Js.Array.length
+  Js.log(
+    `${getToday()} Pending : ${pending->Belt.Int.toString} Completed : ${completed->Belt.Int.toString}`,
+  )
 }
 
 let option = args => {
@@ -203,26 +210,3 @@ let option = args => {
 }
 
 let _ = option(args)
-
-// Js.log(option(args))
-// Js.log(option(args))
-// case 'help':
-//       cmdHelp()
-//       break;
-//     case 'ls':
-//       cmdLs()
-//       break
-//     case 'add':
-//       cmdAddTodo(arg)
-//       break
-//     case 'del':
-//       cmdDelTodo(arg)
-//       break
-//     case 'done':
-//       cmdMarkDone(arg)
-//       break
-//     case 'report':
-//       cmdReport()
-//       break
-//     default:
-//       cmdHelp()

@@ -3,6 +3,7 @@
 
 var Fs = require("fs");
 var Os = require("os");
+var Curry = require("bs-platform/lib/js/curry.js");
 var Process = require("process");
 var Belt_Int = require("bs-platform/lib/js/belt_Int.js");
 var Belt_Array = require("bs-platform/lib/js/belt_Array.js");
@@ -154,6 +155,21 @@ function cmdMarkDone(numbers) {
               }));
 }
 
+function cmdReport(param) {
+  var pending = Fs.readFileSync(pending_todos_file, {
+          encoding: encoding,
+          flag: "r"
+        }).trim();
+  var pending$1 = pending.split(Os.EOL).length;
+  var completed = Fs.readFileSync(completed_todos_file, {
+          encoding: encoding,
+          flag: "r"
+        }).trim();
+  var completed$1 = completed.split(Os.EOL).length;
+  console.log(Curry._1(getToday, undefined) + " Pending : " + String(pending$1) + " Completed : " + String(completed$1));
+  
+}
+
 function option(args) {
   if (args.length === 0) {
     console.log(help_string);
@@ -176,6 +192,8 @@ function option(args) {
         return ;
     case "ls" :
         return cmdLs(undefined);
+    case "report" :
+        return cmdReport(undefined);
     default:
       console.log(help_string);
       return ;
@@ -199,5 +217,6 @@ exports.cmdLs = cmdLs;
 exports.cmdAddTodo = cmdAddTodo;
 exports.cmdDelTodo = cmdDelTodo;
 exports.cmdMarkDone = cmdMarkDone;
+exports.cmdReport = cmdReport;
 exports.option = option;
 /* argv Not a pure module */
