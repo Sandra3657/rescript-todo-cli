@@ -91,6 +91,25 @@ let delTodo = number => {
   }
 }
 
+let markTodo = number => {
+  let todos = readFileSync(pending_todos_file, {encoding: encoding, flag: "r"})->Js.String.trim
+  if todos->Js.String.length != 0 {
+    let todos: array<string> = Js.String.split("\n", todos)
+    if number < 1 || number > todos->Belt.Array.length {
+      Js.log(`Error: todo #${number->Belt.Int.toString} does not exist.`)
+    } else {
+      let completedTodo = Js.Array.spliceInPlace(~pos=number - 1, ~remove=1, ~add=[], todos)
+      writeFileSync(
+        pending_todos_file,
+        Js.Array.joinWith("\n", todos),
+        {encoding: encoding, flag: "w"},
+      )
+      appendFileSync(completed_todos_file, completedTodo[0] ++ eol, {encoding: encoding, flag: "a"})
+      Js.log(`Marked todo #${number->Belt.Int.toString} as done.`)
+    }
+  }
+}
+
 let cmdHelp = () => {
   Js.log(help_string)
 }
@@ -101,7 +120,7 @@ let cmdLs = () => {
     if Js.String.length(todos) == 0 {
       Js.log("There are no pending todos!")
     } else {
-      let todos: array<string> = Js.String.split("\n", todos)
+      let todos: array<string> = Js.String.split("\n", todos->Js.String.trim)
       let () = Belt.Array.reverseInPlace(todos)
       let length = todos->Belt.Array.length
       // let todos = Js.Array.mapi(
@@ -142,6 +161,24 @@ let cmdDelTodo = numbers => {
   }
 }
 
+let cmdMarkDone = numbers => {
+  if isEmpty(numbers) {
+    Js.log(`Error: Missing NUMBER for marking todo as done.`)
+  } else {
+    let numbers = numbers->Belt.Array.map(num => num->Belt.Int.fromString)
+    numbers->Belt.Array.forEach(num =>
+      switch num {
+      | None => Js.log("Error")
+      | Some(x) => x->markTodo
+      }
+    )
+  }
+}
+
+let cmdReport = () => {
+
+}
+
 let option = args => {
   if isEmpty(args) {
     // Js.log(help_string)
@@ -158,6 +195,8 @@ let option = args => {
     | "ls" => cmdLs()
     | "add" => cmdAddTodo(args)
     | "del" => cmdDelTodo(args)
+    | "done" => cmdMarkDone(args)
+    | "report" => cmdReport()
     | _ => cmdHelp()
     }
   }

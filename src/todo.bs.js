@@ -2,9 +2,11 @@
 'use strict';
 
 var Fs = require("fs");
+var Os = require("os");
 var Process = require("process");
 var Belt_Int = require("bs-platform/lib/js/belt_Int.js");
 var Belt_Array = require("bs-platform/lib/js/belt_Array.js");
+var Caml_array = require("bs-platform/lib/js/caml_array.js");
 
 var getToday = (function() {
   let date = new Date();
@@ -16,6 +18,8 @@ var getToday = (function() {
 var encoding = "utf8";
 
 var pending_todos_file = "todo.txt";
+
+var completed_todos_file = "done.txt";
 
 var help_string = "Usage :-\n$ ./todo add \"todo item\"  # Add a new todo\n$ ./todo ls               # Show remaining todos\n$ ./todo del NUMBER       # Delete a todo\n$ ./todo done NUMBER      # Complete a todo\n$ ./todo help             # Show usage\n$ ./todo report           # Statistics";
 
@@ -49,6 +53,32 @@ function delTodo(number) {
   
 }
 
+function markTodo(number) {
+  var todos = Fs.readFileSync(pending_todos_file, {
+          encoding: encoding,
+          flag: "r"
+        }).trim();
+  if (todos.length === 0) {
+    return ;
+  }
+  var todos$1 = todos.split("\n");
+  if (number < 1 || number > todos$1.length) {
+    console.log("Error: todo #" + String(number) + " does not exist.");
+    return ;
+  }
+  var completedTodo = todos$1.splice(number - 1 | 0, 1);
+  Fs.writeFileSync(pending_todos_file, todos$1.join("\n"), {
+        encoding: encoding,
+        flag: "w"
+      });
+  Fs.appendFileSync(completed_todos_file, Caml_array.get(completedTodo, 0) + Os.EOL, {
+        encoding: encoding,
+        flag: "a"
+      });
+  console.log("Marked todo #" + String(number) + " as done.");
+  
+}
+
 function cmdHelp(param) {
   console.log(help_string);
   
@@ -64,7 +94,7 @@ function cmdLs(param) {
       console.log("There are no pending todos!");
       return ;
     }
-    var todos$1 = todos.split("\n");
+    var todos$1 = todos.trim().split("\n");
     Belt_Array.reverseInPlace(todos$1);
     var length = todos$1.length;
     return Belt_Array.forEachWithIndex(todos$1, (function (index, todo) {
@@ -108,6 +138,22 @@ function cmdDelTodo(numbers) {
               }));
 }
 
+function cmdMarkDone(numbers) {
+  if (numbers.length === 0) {
+    console.log("Error: Missing NUMBER for marking todo as done.");
+    return ;
+  }
+  var numbers$1 = Belt_Array.map(numbers, Belt_Int.fromString);
+  return Belt_Array.forEach(numbers$1, (function (num) {
+                if (num !== undefined) {
+                  return markTodo(num);
+                } else {
+                  console.log("Error");
+                  return ;
+                }
+              }));
+}
+
 function option(args) {
   if (args.length === 0) {
     console.log(help_string);
@@ -123,6 +169,8 @@ function option(args) {
         return cmdAddTodo(args$1);
     case "del" :
         return cmdDelTodo(args$1);
+    case "done" :
+        return cmdMarkDone(args$1);
     case "help" :
         console.log(help_string);
         return ;
@@ -136,8 +184,6 @@ function option(args) {
 
 option(args);
 
-var completed_todos_file = "done.txt";
-
 exports.getToday = getToday;
 exports.encoding = encoding;
 exports.pending_todos_file = pending_todos_file;
@@ -147,9 +193,11 @@ exports.argv = argv;
 exports.args = args;
 exports.isEmpty = isEmpty;
 exports.delTodo = delTodo;
+exports.markTodo = markTodo;
 exports.cmdHelp = cmdHelp;
 exports.cmdLs = cmdLs;
 exports.cmdAddTodo = cmdAddTodo;
 exports.cmdDelTodo = cmdDelTodo;
+exports.cmdMarkDone = cmdMarkDone;
 exports.option = option;
 /* argv Not a pure module */
