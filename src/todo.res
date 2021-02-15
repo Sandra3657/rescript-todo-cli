@@ -73,40 +73,50 @@ let isEmpty = x => {
   }
 }
 
-let delTodo = number => {
-  let todos = readFileSync(pending_todos_file, {encoding: encoding, flag: "r"})->Js.String.trim
-  if todos->Js.String.length != 0 {
-    let todos: array<string> = Js.String.split("\n", todos)
-    if number < 1 || number > todos->Belt.Array.length {
-      Js.log(`Error: todo #${number->Belt.Int.toString} does not exist. Nothing deleted.`)
+let readFile = file => {
+  if existsSync(file) {
+    let text = readFileSync(file, {encoding: encoding, flag: "r"})->Js.String.trim
+    if text->Js.String.length != 0 {
+      let lines = Js.String.split(eol, text)
+      lines
     } else {
-      let _ = Js.Array.spliceInPlace(~pos=number - 1, ~remove=1, ~add=[], todos)
-      Js.log(`Deleted todo #${number->Belt.Int.toString}`)
-      writeFileSync(
-        pending_todos_file,
-        Js.Array.joinWith("\n", todos),
-        {encoding: encoding, flag: "w"},
-      )
+      []
     }
+  } else {
+    []
+  }
+}
+
+let delTodo = number => {
+  let todos = readFile(pending_todos_file)
+  Js.log(todos)
+  if number < 1 || number > todos->Belt.Array.length {
+    Js.log(`Error: todo #${number->Belt.Int.toString} does not exist. Nothing deleted.`)
+  } else {
+    let _ = Js.Array.spliceInPlace(~pos=number - 1, ~remove=1, ~add=[], todos)
+    Js.log(`Deleted todo #${number->Belt.Int.toString}`)
+    writeFileSync(
+      pending_todos_file,
+      Js.Array.joinWith("\n", todos),
+      {encoding: encoding, flag: "w"},
+    )
   }
 }
 
 let markTodo = number => {
-  let todos = readFileSync(pending_todos_file, {encoding: encoding, flag: "r"})->Js.String.trim
-  if todos->Js.String.length != 0 {
-    let todos: array<string> = Js.String.split("\n", todos)
-    if number < 1 || number > todos->Belt.Array.length {
-      Js.log(`Error: todo #${number->Belt.Int.toString} does not exist.`)
-    } else {
-      let completedTodo = Js.Array.spliceInPlace(~pos=number - 1, ~remove=1, ~add=[], todos)
-      writeFileSync(
-        pending_todos_file,
-        Js.Array.joinWith("\n", todos),
-        {encoding: encoding, flag: "w"},
-      )
-      appendFileSync(completed_todos_file, completedTodo[0] ++ eol, {encoding: encoding, flag: "a"})
-      Js.log(`Marked todo #${number->Belt.Int.toString} as done.`)
-    }
+  let todos = readFile(pending_todos_file)
+  Js.log(todos)
+  if number < 1 || number > todos->Belt.Array.length {
+    Js.log(`Error: todo #${number->Belt.Int.toString} does not exist.`)
+  } else {
+    let completedTodo = Js.Array.spliceInPlace(~pos=number - 1, ~remove=1, ~add=[], todos)
+    writeFileSync(
+      pending_todos_file,
+      Js.Array.joinWith("\n", todos),
+      {encoding: encoding, flag: "w"},
+    )
+    appendFileSync(completed_todos_file, completedTodo[0] ++ eol, {encoding: encoding, flag: "a"})
+    Js.log(`Marked todo #${number->Belt.Int.toString} as done.`)
   }
 }
 
@@ -115,24 +125,15 @@ let cmdHelp = () => {
 }
 
 let cmdLs = () => {
-  if existsSync(pending_todos_file) {
-    let todos = readFileSync(pending_todos_file, {encoding: encoding, flag: "r"})
-    if Js.String.length(todos) == 0 {
-      Js.log("There are no pending todos!")
-    } else {
-      let todos: array<string> = Js.String.split("\n", todos->Js.String.trim)
-      let () = Belt.Array.reverseInPlace(todos)
-      let length = todos->Belt.Array.length
-      // let todos = Js.Array.mapi(
-      //   (todo, index) => `[${Belt.Int.toString(length - index)}] ${todo}`,
-      //   todos,
-      // )
-      todos->Belt.Array.forEachWithIndex((index, todo) =>
-        Js.log(`[${Belt.Int.toString(length - index)}] ${todo}`)
-      )
-    }
-  } else {
+  let todos = readFile(pending_todos_file)
+  if todos->Belt.Array.length == 0 {
     Js.log("There are no pending todos!")
+  } else {
+    let () = Belt.Array.reverseInPlace(todos)
+    let length = todos->Belt.Array.length
+    todos->Belt.Array.forEachWithIndex((index, todo) =>
+      Js.log(`[${Belt.Int.toString(length - index)}] ${todo}`)
+    )
   }
 }
 
@@ -141,7 +142,7 @@ let cmdAddTodo = text => {
     Js.log("Error: Missing todo string. Nothing added!")
   } else {
     Belt.Array.forEach(text, x => {
-      appendFileSync(pending_todos_file, x ++ "\n", {encoding: encoding, flag: "a"})
+      appendFileSync(pending_todos_file, x ++ eol, {encoding: encoding, flag: "a"})
       Js.log(`Added todo: "${x}"`)
     })
   }
@@ -176,11 +177,8 @@ let cmdMarkDone = numbers => {
 }
 
 let cmdReport = () => {
-  let pending = readFileSync(pending_todos_file, {encoding: encoding, flag: "r"})->Js.String.trim
-  let pending = Js.String.split(eol, pending)->Js.Array.length
-  let completed =
-    readFileSync(completed_todos_file, {encoding: encoding, flag: "r"})->Js.String.trim
-  let completed = Js.String.split(eol, completed)->Js.Array.length
+  let pending = readFile(pending_todos_file)->Belt.Array.length
+  let completed = readFile(completed_todos_file)->Belt.Array.length
   Js.log(
     `${getToday()} Pending : ${pending->Belt.Int.toString} Completed : ${completed->Belt.Int.toString}`,
   )
@@ -188,7 +186,6 @@ let cmdReport = () => {
 
 let option = args => {
   if isEmpty(args) {
-    // Js.log(help_string)
     cmdHelp()
   } else {
     let args = Belt.Array.map(args, x => x->Js.String.trim->Js.String.toLowerCase)

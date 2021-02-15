@@ -32,21 +32,30 @@ function isEmpty(x) {
   return x.length === 0;
 }
 
-function delTodo(number) {
-  var todos = Fs.readFileSync(pending_todos_file, {
+function readFile(file) {
+  if (!Fs.existsSync(file)) {
+    return [];
+  }
+  var text = Fs.readFileSync(file, {
           encoding: encoding,
           flag: "r"
         }).trim();
-  if (todos.length === 0) {
-    return ;
+  if (text.length !== 0) {
+    return text.split(Os.EOL);
+  } else {
+    return [];
   }
-  var todos$1 = todos.split("\n");
-  if (number < 1 || number > todos$1.length) {
+}
+
+function delTodo(number) {
+  var todos = readFile(pending_todos_file);
+  console.log(todos);
+  if (number < 1 || number > todos.length) {
     console.log("Error: todo #" + String(number) + " does not exist. Nothing deleted.");
   } else {
-    todos$1.splice(number - 1 | 0, 1);
+    todos.splice(number - 1 | 0, 1);
     console.log("Deleted todo #" + String(number));
-    Fs.writeFileSync(pending_todos_file, todos$1.join("\n"), {
+    Fs.writeFileSync(pending_todos_file, todos.join("\n"), {
           encoding: encoding,
           flag: "w"
         });
@@ -55,20 +64,14 @@ function delTodo(number) {
 }
 
 function markTodo(number) {
-  var todos = Fs.readFileSync(pending_todos_file, {
-          encoding: encoding,
-          flag: "r"
-        }).trim();
-  if (todos.length === 0) {
-    return ;
-  }
-  var todos$1 = todos.split("\n");
-  if (number < 1 || number > todos$1.length) {
+  var todos = readFile(pending_todos_file);
+  console.log(todos);
+  if (number < 1 || number > todos.length) {
     console.log("Error: todo #" + String(number) + " does not exist.");
     return ;
   }
-  var completedTodo = todos$1.splice(number - 1 | 0, 1);
-  Fs.writeFileSync(pending_todos_file, todos$1.join("\n"), {
+  var completedTodo = todos.splice(number - 1 | 0, 1);
+  Fs.writeFileSync(pending_todos_file, todos.join("\n"), {
         encoding: encoding,
         flag: "w"
       });
@@ -86,25 +89,17 @@ function cmdHelp(param) {
 }
 
 function cmdLs(param) {
-  if (Fs.existsSync(pending_todos_file)) {
-    var todos = Fs.readFileSync(pending_todos_file, {
-          encoding: encoding,
-          flag: "r"
-        });
-    if (todos.length === 0) {
-      console.log("There are no pending todos!");
-      return ;
-    }
-    var todos$1 = todos.trim().split("\n");
-    Belt_Array.reverseInPlace(todos$1);
-    var length = todos$1.length;
-    return Belt_Array.forEachWithIndex(todos$1, (function (index, todo) {
-                  console.log("[" + String(length - index | 0) + "] " + todo);
-                  
-                }));
+  var todos = readFile(pending_todos_file);
+  if (todos.length === 0) {
+    console.log("There are no pending todos!");
+    return ;
   }
-  console.log("There are no pending todos!");
-  
+  Belt_Array.reverseInPlace(todos);
+  var length = todos.length;
+  return Belt_Array.forEachWithIndex(todos, (function (index, todo) {
+                console.log("[" + String(length - index | 0) + "] " + todo);
+                
+              }));
 }
 
 function cmdAddTodo(text) {
@@ -113,7 +108,7 @@ function cmdAddTodo(text) {
     return ;
   } else {
     return Belt_Array.forEach(text, (function (x) {
-                  Fs.appendFileSync(pending_todos_file, x + "\n", {
+                  Fs.appendFileSync(pending_todos_file, x + Os.EOL, {
                         encoding: encoding,
                         flag: "a"
                       });
@@ -156,17 +151,9 @@ function cmdMarkDone(numbers) {
 }
 
 function cmdReport(param) {
-  var pending = Fs.readFileSync(pending_todos_file, {
-          encoding: encoding,
-          flag: "r"
-        }).trim();
-  var pending$1 = pending.split(Os.EOL).length;
-  var completed = Fs.readFileSync(completed_todos_file, {
-          encoding: encoding,
-          flag: "r"
-        }).trim();
-  var completed$1 = completed.split(Os.EOL).length;
-  console.log(Curry._1(getToday, undefined) + " Pending : " + String(pending$1) + " Completed : " + String(completed$1));
+  var pending = readFile(pending_todos_file).length;
+  var completed = readFile(completed_todos_file).length;
+  console.log(Curry._1(getToday, undefined) + " Pending : " + String(pending) + " Completed : " + String(completed));
   
 }
 
@@ -210,6 +197,7 @@ exports.help_string = help_string;
 exports.argv = argv;
 exports.args = args;
 exports.isEmpty = isEmpty;
+exports.readFile = readFile;
 exports.delTodo = delTodo;
 exports.markTodo = markTodo;
 exports.cmdHelp = cmdHelp;
