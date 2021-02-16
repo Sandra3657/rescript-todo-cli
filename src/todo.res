@@ -89,7 +89,6 @@ let readFile = file => {
 
 let delTodo = number => {
   let todos = readFile(pending_todos_file)
-  Js.log(todos)
   if number < 1 || number > todos->Belt.Array.length {
     Js.log(`Error: todo #${number->Belt.Int.toString} does not exist. Nothing deleted.`)
   } else {
@@ -105,7 +104,6 @@ let delTodo = number => {
 
 let markTodo = number => {
   let todos = readFile(pending_todos_file)
-  Js.log(todos)
   if number < 1 || number > todos->Belt.Array.length {
     Js.log(`Error: todo #${number->Belt.Int.toString} does not exist.`)
   } else {

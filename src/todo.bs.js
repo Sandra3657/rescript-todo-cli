@@ -49,7 +49,6 @@ function readFile(file) {
 
 function delTodo(number) {
   var todos = readFile(pending_todos_file);
-  console.log(todos);
   if (number < 1 || number > todos.length) {
     console.log("Error: todo #" + String(number) + " does not exist. Nothing deleted.");
   } else {
@@ -65,7 +64,6 @@ function delTodo(number) {
 
 function markTodo(number) {
   var todos = readFile(pending_todos_file);
-  console.log(todos);
   if (number < 1 || number > todos.length) {
     console.log("Error: todo #" + String(number) + " does not exist.");
     return ;
