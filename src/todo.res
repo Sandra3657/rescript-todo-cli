@@ -59,6 +59,14 @@ $ ./todo done NUMBER      # Complete a todo
 $ ./todo help             # Show usage
 $ ./todo report           # Statistics`
 
+type cmd =
+  | Help
+  | Ls
+  | Add(array<string>)
+  | Delete(array<string>)
+  | Done(array<string>)
+  | Report
+
 @bs.module("process")
 external argv: array<string> = "argv"
 
@@ -192,14 +200,22 @@ let option = args => {
     | None => "none"
     | Some(x) => x
     }
+    let command = switch command {
+    | "ls" => Ls
+    | "add" => Add(args)
+    | "del" => Delete(args)
+    | "done" => Done(args)
+    | "report" => Report
+    | _ => Help
+    }
+
     switch command {
-    | "help" => cmdHelp()
-    | "ls" => cmdLs()
-    | "add" => cmdAddTodo(args)
-    | "del" => cmdDelTodo(args)
-    | "done" => cmdMarkDone(args)
-    | "report" => cmdReport()
-    | _ => cmdHelp()
+    | Help => cmdHelp()
+    | Ls => cmdLs()
+    | Add(args) => cmdAddTodo(args)
+    | Delete(args) => cmdDelTodo(args)
+    | Done(args) => cmdMarkDone(args)
+    | Report => cmdReport()
     }
   }
 }

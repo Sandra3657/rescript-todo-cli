@@ -165,23 +165,56 @@ function option(args) {
         }));
   var command = args$1.shift();
   var command$1 = command !== undefined ? command : "none";
+  var command$2;
   switch (command$1) {
     case "add" :
-        return cmdAddTodo(args$1);
+        command$2 = {
+          TAG: /* Add */0,
+          _0: args$1
+        };
+        break;
     case "del" :
-        return cmdDelTodo(args$1);
+        command$2 = {
+          TAG: /* Delete */1,
+          _0: args$1
+        };
+        break;
     case "done" :
-        return cmdMarkDone(args$1);
-    case "help" :
-        console.log(help_string);
-        return ;
+        command$2 = {
+          TAG: /* Done */2,
+          _0: args$1
+        };
+        break;
     case "ls" :
-        return cmdLs(undefined);
+        command$2 = /* Ls */1;
+        break;
     case "report" :
-        return cmdReport(undefined);
+        command$2 = /* Report */2;
+        break;
     default:
-      console.log(help_string);
-      return ;
+      command$2 = /* Help */0;
+  }
+  if (typeof command$2 === "number") {
+    switch (command$2) {
+      case /* Help */0 :
+          console.log(help_string);
+          return ;
+      case /* Ls */1 :
+          return cmdLs(undefined);
+      case /* Report */2 :
+          return cmdReport(undefined);
+      
+    }
+  } else {
+    switch (command$2.TAG | 0) {
+      case /* Add */0 :
+          return cmdAddTodo(command$2._0);
+      case /* Delete */1 :
+          return cmdDelTodo(command$2._0);
+      case /* Done */2 :
+          return cmdMarkDone(command$2._0);
+      
+    }
   }
 }
 
