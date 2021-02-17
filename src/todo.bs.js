@@ -24,10 +24,6 @@ var completed_todos_file = "done.txt";
 
 var help_string = "Usage :-\n$ ./todo add \"todo item\"  # Add a new todo\n$ ./todo ls               # Show remaining todos\n$ ./todo del NUMBER       # Delete a todo\n$ ./todo done NUMBER      # Complete a todo\n$ ./todo help             # Show usage\n$ ./todo report           # Statistics";
 
-var argv = Process.argv;
-
-var args = argv.slice(2);
-
 function isEmpty(x) {
   return x.length === 0;
 }
@@ -155,6 +151,10 @@ function cmdReport(param) {
   
 }
 
+var argv = Process.argv;
+
+var args = argv.slice(2);
+
 function option(args) {
   if (args.length === 0) {
     console.log(help_string);
@@ -225,8 +225,6 @@ exports.encoding = encoding;
 exports.pending_todos_file = pending_todos_file;
 exports.completed_todos_file = completed_todos_file;
 exports.help_string = help_string;
-exports.argv = argv;
-exports.args = args;
 exports.isEmpty = isEmpty;
 exports.readFile = readFile;
 exports.delTodo = delTodo;
@@ -237,5 +235,7 @@ exports.cmdAddTodo = cmdAddTodo;
 exports.cmdDelTodo = cmdDelTodo;
 exports.cmdMarkDone = cmdMarkDone;
 exports.cmdReport = cmdReport;
+exports.argv = argv;
+exports.args = args;
 exports.option = option;
 /* argv Not a pure module */

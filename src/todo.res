@@ -32,22 +32,10 @@ external writeFileSync: (string, string, fsConfig) => unit = "writeFileSync"
 /* https://nodejs.org/api/os.html#os_os_eol */
 @bs.module("os") external eol: string = "EOL"
 
+@bs.module("process")
+external argv: array<string> = "argv"
+
 let encoding = "utf8"
-
-/*
-NOTE: The code below is provided just to show you how to use the
-date and file functions defined above. Remove it to begin your implementation.
-*/
-
-// Js.log("Hello! today is " ++ getToday())
-
-// if existsSync("todo.txt") {
-//   Js.log("Todo file exists.")
-// } else {
-//   writeFileSync("todo.txt", "This is todo!" ++ eol, {encoding: encoding, flag: "w"})
-//   Js.log("Todo file created.")
-// }
-
 let pending_todos_file: string = "todo.txt"
 let completed_todos_file = "done.txt"
 
@@ -66,12 +54,6 @@ type cmd =
   | Delete(array<string>)
   | Done(array<string>)
   | Report
-
-@bs.module("process")
-external argv: array<string> = "argv"
-
-let argv = argv
-let args = Js.Array.sliceFrom(2, argv)
 
 let isEmpty = x => {
   if Belt.Array.length(x) == 0 {
@@ -189,6 +171,9 @@ let cmdReport = () => {
     `${getToday()} Pending : ${pending->Belt.Int.toString} Completed : ${completed->Belt.Int.toString}`,
   )
 }
+
+let argv = argv
+let args = Js.Array.sliceFrom(2, argv)
 
 let option = args => {
   if isEmpty(args) {
