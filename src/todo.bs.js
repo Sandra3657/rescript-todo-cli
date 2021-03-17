@@ -7,6 +7,7 @@ var Curry = require("bs-platform/lib/js/curry.js");
 var Belt_Int = require("bs-platform/lib/js/belt_Int.js");
 var Belt_Array = require("bs-platform/lib/js/belt_Array.js");
 var Caml_array = require("bs-platform/lib/js/caml_array.js");
+var Belt_Option = require("bs-platform/lib/js/belt_Option.js");
 
 var getToday = (function() {
   let date = new Date();
@@ -90,10 +91,8 @@ function cmdLs(param) {
   if (todos.length === 0) {
     console.log("There are no pending todos!");
   } else {
-    console.log(Belt_Array.reduce(Belt_Array.reverse(Belt_Array.mapWithIndex(todos, (function (i, x) {
-                        return "[" + String(i + 1 | 0) + "] " + x;
-                      }))), "", (function (acc, x) {
-                return acc + x + "\n";
+    console.log(Belt_Array.reduceWithIndex(todos, "", (function (acc, x, i) {
+                return "\n[" + String(i + 1 | 0) + "] " + x + acc;
               })));
   }
   
@@ -161,7 +160,7 @@ var command = Belt_Array.get(argv, 2);
 var args = argv.splice(3);
 
 function option(command, args) {
-  var command$1 = command !== undefined ? command : "help";
+  var command$1 = Belt_Option.getWithDefault(command, "help");
   var command$2;
   switch (command$1) {
     case "add" :

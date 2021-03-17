@@ -113,9 +113,7 @@ let cmdLs = () => {
     Js.log("There are no pending todos!")
   } else {
     todos
-    ->Belt.Array.mapWithIndex((i, x) => `[${(i + 1)->Belt.Int.toString}] ${x}`)
-    ->Belt.Array.reverse
-    ->Belt.Array.reduce(``, (acc, x) => acc ++ x ++ `\n`)
+    ->Belt.Array.reduceWithIndex(``, (acc, x, i) => `\n[${(i + 1)->Belt.Int.toString}] ${x}` ++ acc)
     ->Js.log
   }
 }
@@ -170,10 +168,7 @@ let command = argv->Belt.Array.get(2)
 let args = Js.Array.removeFromInPlace(argv, ~pos=3)
 
 let option = (command, args) => {
-  let command = switch command {
-  | None => "help"
-  | Some(x) => x
-  }
+  let command = command->Belt.Option.getWithDefault("help")
 
   let command = switch command {
   | "ls" => Ls
